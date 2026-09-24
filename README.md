@@ -30,6 +30,10 @@ Instead of switching context to ask security or code-related questions, develope
 ---
 
 ## ⚙️ How it Works
+
+> [!IMPORTANT]
+> **Important Note:** In order to ask the LLM for anything, you MUST explicitly mention the bot by including the annotation `@CodeReviewerAndDebugger` in your comment. If you do not tag the bot, it will intentionally ignore the comment!
+
 1. **Trigger:** A developer comments `@CodeReviewerAndDebugger how do I fix this SQL Injection vulnerability?` on a Pull Request.
 2. **Listen:** GitHub fires a webhook to the FastAPI server.
 3. **Verify & Process:** The server verifies the webhook signature and checks if the bot was mentioned.
