@@ -2,7 +2,7 @@
 # See https://fly.io/docs/reference/configuration/ for all options.
 
 app = "chatops-security-mentor"
-primary_region = "iad"  # US East — most stable Fly.io region
+primary_region = "sin"  # Singapore
 
 [build]
   dockerfile = "Dockerfile"
