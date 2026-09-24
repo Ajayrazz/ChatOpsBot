@@ -20,3 +20,4 @@ jobs:
         run: flyctl deploy --remote-only --yes
         env:
           FLY_API_TOKEN: ${{ secrets.FLY_API_TOKEN }}
+          DEPOT_DISABLE: "1"
