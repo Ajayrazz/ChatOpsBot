@@ -120,8 +120,9 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
             repo_full_name = payload["repository"]["full_name"]
             installation_id = payload["installation"]["id"]
             
-            # Check if someone mentioned our bot, but ensure it's not the bot replying to itself!
-            if "@CodeReviewerAndDebugger" in comment_body and "[bot]" not in sender_login:
+            # Check if someone mentioned our bot (case-insensitive and handles accidental spaces)
+            body_lower = comment_body.lower()
+            if ("@coderevieweranddebugger" in body_lower or "@ coderevieweranddebugger" in body_lower) and "[bot]" not in sender_login.lower():
                 print(f"🚨 Bot mentioned by {sender_login}! Triggering ChatOps logic...")
                 
                 # Run the LLM processing in the background so we can instantly return 200 OK to GitHub
