@@ -14,8 +14,23 @@ app = FastAPI()
 
 GITHUB_APP_ID = os.getenv("GITHUB_APP_ID")
 GITHUB_WEBHOOK_SECRET = os.getenv("GITHUB_WEBHOOK_SECRET")
-PRIVATE_KEY_PATH = "private-key.pem"
+PRIVATE_KEY_PATH = os.getenv("GITHUB_PRIVATE_KEY_PATH", "private-key.pem")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+
+# Support private key as env var (for Fly.io / cloud) or file (for local dev)
+GITHUB_PRIVATE_KEY = os.getenv("GITHUB_PRIVATE_KEY")
+
+
+def _get_private_key() -> str:
+    """Load the GitHub App private key from env var or file."""
+    if GITHUB_PRIVATE_KEY:
+        # In production (Fly.io), the key is passed as an env var
+        # Replace literal \n with actual newlines (common when pasting PEM into env vars)
+        return GITHUB_PRIVATE_KEY.replace("\\n", "\n")
+    # Fallback: read from file (local dev)
+    with open(PRIVATE_KEY_PATH, "r") as f:
+        return f.read()
+
 
 def verify_signature(payload_body: bytes, signature_header: str) -> bool:
     if not signature_header:
@@ -32,8 +47,7 @@ def verify_signature(payload_body: bytes, signature_header: str) -> bool:
     return hmac.compare_digest(expected_signature, signature_header)
 
 def get_jwt():
-    with open(PRIVATE_KEY_PATH, "r") as f:
-        private_key = f.read()
+    private_key = _get_private_key()
     now = int(time.time())
     payload = {
         "iat": now - 60,
@@ -138,6 +152,14 @@ async def github_webhook(request: Request, background_tasks: BackgroundTasks):
 
     return {"status": "ignored"}
 
+
+@app.get("/")
+async def health():
+    """Health check endpoint — Fly.io uses this to verify the app is alive."""
+    return {"status": "ok", "app": "ChatOps Security Mentor"}
+
+
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.getenv("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
